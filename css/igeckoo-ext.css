@@ -1,0 +1,483 @@
+/* ---------------------------------------------------------------------------
+   igeckoo-ext.css — additions layered on top of the original app.css.
+
+   Kept in a separate file on purpose: app.css is a byte-for-byte artifact of
+   the recovered site, and the build only rewrites URLs inside it. Anything new
+   lives here so the recovered stylesheet stays recognisable as the original.
+
+   Palette is taken from app.css, nothing invented:
+     #16a7df  .blue-2  section headings ("We look forward to hearing from you")
+     #0085c4  .blue    darker step, used for hover
+     #003f77  .blue-1  deep navy
+     #5B6368  menu sprite grey (normal state)
+     #1B77BC  menu sprite blue (hover state)
+
+   Breakpoint contract inherited from app.css:
+     >= 992px   .menu-computer visible, .menu-mobile hidden
+     <= 991.98px .menu-computer hidden, .menu-mobile visible
+   Every rule below is added to BOTH menus for that reason.
+--------------------------------------------------------------------------- */
+
+/* --- contact button -------------------------------------------------------
+   Brand blue instead of Bootstrap's stock #007bff. */
+.btn-brand {
+    color: #fff;
+    background-color: #16a7df;
+    border-color: #16a7df;
+}
+
+/* The site already has a button language: 2.5rem type and an asymmetric radius
+   (top-left + bottom-right rounded), used by "Tell me more" and every other
+   call to action in app.css. The contact button was a stock Bootstrap pill and
+   read as *less* important than the secondary buttons above it — backwards,
+   since mailing us is the point of the section. Same shape, brand colour. */
+.btn-contact {
+    font-size: 2.5rem !important;
+    padding: 10px 34px !important;
+    border-top-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0;
+    line-height: 1.3;
+    max-width: 100%;
+    overflow-wrap: break-word;
+}
+.btn-brand:hover,
+.btn-brand:active {
+    color: #fff;
+    background-color: #0085c4;
+    border-color: #0085c4;
+}
+.btn-brand:focus {
+    color: #fff;
+    background-color: #0085c4;
+    border-color: #0085c4;
+    box-shadow: 0 0 0 .2rem rgba(22, 167, 223, .5);
+}
+
+/* --- EN | ES language switch --------------------------------------------- */
+.lang-switch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    font-family: Montserrat, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    letter-spacing: .04em;
+}
+/* Both navbars sit on #header{background:#1a1e1c} — near black. The Bootstrap
+   class on the desktop one says "navbar-light", which refers to its link
+   colours, NOT to its background: an earlier version of this file trusted that
+   name and painted the switch deep navy (#003f77) at 50% opacity, which was
+   effectively invisible against the dark bar. Colours here are chosen against
+   the real background, and the inactive state is an explicit light grey rather
+   than a faded dark one, so its contrast does not depend on opacity. */
+.lang-switch button {
+    background: none;
+    border: 0;
+    padding: 2px 3px;
+    font: inherit;
+    color: #b9c0c4;
+    cursor: pointer;
+    transition: color .15s ease;
+}
+.lang-switch button:hover {
+    color: #fff;
+}
+.lang-switch button.is-active {
+    color: #16a7df;
+}
+.lang-switch .sep {
+    color: #6b7378;
+}
+.menu-computer .lang-switch {
+    padding-right: 6px;
+}
+.menu-mobile .lang-switch {
+    margin-right: 12px;
+}
+
+/* --- EMPRESAS (MX) menu circle -------------------------------------------
+   Matches the other circles exactly: 55x55 block over a 55x110 sprite whose
+   bottom half is the hover state. Sizing comes from app.css; only the image
+   is declared here. */
+#header .menu-computer .navbar-nav .nav-link#img-menu-empresas {
+    background-image: url(../img/menu_empresas_sprite.png);
+}
+
+/* While the module is open, the MX circle holds its active state and the other
+   six release theirs. app.js has a scroll handler that lights up whichever icon
+   owns the section currently in view; with every one of those sections hidden
+   it measures them all at offset 0 and settles on Contact, so the menu would
+   claim we are somewhere we are not. Two ids beat the `:hover` / `.active`
+   rules in app.css, which carry one. */
+body.view-empresas #header .menu-computer .navbar-nav .nav-link.active:not(#img-menu-empresas) {
+    background-position: top;
+}
+body.view-empresas #header .menu-computer .navbar-nav .nav-link#img-menu-empresas {
+    background-position: bottom;
+}
+
+/* --- EMPRESAS sub-list in the mobile burger menu --------------------------
+   The desktop panel and this list are generated from one array in
+   inject_ext.py, so they cannot drift apart. app.css styles the burger's own
+   links (1.6rem, 10px padding); these sit under one of them, so they step down
+   a size and indent to read as children rather than as six more siblings. */
+#header .menu-mobile #navbar-mobile .navbar-nav .emp-submenu {
+    /* Deliberately NOT .navbar-nav: it is a list inside the nav, not a second
+       nav. Sharing the class made `.navbar-nav > li` match both lists, which
+       is a real hazard for anything selecting the menu's top-level entries. */
+    list-style: none;
+    padding-left: 18px;
+    margin: 0 0 6px;
+    border-left: 1px solid #3a4145;
+}
+#header .menu-mobile #navbar-mobile .navbar-nav .emp-submenu .nav-link {
+    font-size: 1.35rem !important;
+    padding: 6px 10px;
+    color: #b9c0c4;
+}
+#header .menu-mobile #navbar-mobile .navbar-nav .emp-submenu .nav-link:hover {
+    color: #16a7df;
+}
+
+/* =========================================================================
+   EMPRESAS view — laid out in the site's own bands and shapes.
+
+   The content and every text node come from the PDF brochure and are
+   untouched (tools/textnodes_diff proves it). The SHAPE is the site's:
+   full-bleed bands that alternate dark / white+dots / navy, 48px Montserrat
+   titles in brand blue or white, the italic 25px support line, the PNG claim
+   disc, the brand-blue box with opposite 50px corners (#cloud-banner .box),
+   the navy slab with one 50px corner (#data-mgmt-b .left), the three-box
+   colour strip (#cloud-content .boxes), the tab-headed card (.custom-card),
+   the two-tone split card (#consulting-banner .bottom), the 75px-top-corner
+   navy tab (#data-invoices). Palette is app.css's; assets are the site's PNGs.
+
+   app.css pins p/span/a/label to 13px with an !important type selector, so
+   every size on those elements below carries !important.
+   ------------------------------------------------------------------------- */
+#empresas { display: none; }
+body.view-empresas #empresas { display: block; }
+body.view-empresas > *:not(#header):not(#empresas):not(.modal):not(.modal-backdrop):not(.wa-btn) { display: none !important; }
+
+.emp-doc { color: #576368; padding-top: 90px; }          /* fixed 90px header */
+.emp-doc p { font-size: 2rem !important; line-height: 1.5; margin-bottom: 16px; }
+.emp-doc .container { position: relative; }
+
+/* --- bands ----------------------------------------------------------- */
+.emp-band { padding: 70px 0; }
+.emp-band--dark { background: #1a1e1c; color: #fff; }
+.emp-band--dark p { color: #fff; }
+.emp-band--dots { background: #fff url(../img/igecko_lunares-azul.png) no-repeat 100% 0; }
+.emp-band--dots-left { background: #fff url(../img/igecko_lunares-azules-esquina.png) no-repeat 0 0; }
+.emp-band--navy { background: #004078; color: #fff; }
+.emp-band--navy p { color: #fff; }
+.emp-band--white { background: #fff; }
+
+/* --- type ------------------------------------------------------------ */
+.emp-title, .emp-doc h1.emp-banner-title, .emp-doc h2.emp-solution-head {
+    font-family: Montserrat, sans-serif; font-weight: 700; font-size: 4.8rem; line-height: 1.2;
+    color: #16a7df; margin: 0 0 18px; text-transform: none; letter-spacing: 0; border: 0; padding: 0;
+}
+.emp-band--dark .emp-title, .emp-band--navy .emp-title, .emp-slab .emp-title, .emp-close .a { color: #fff; }
+.emp-support { font-family: Roboto, sans-serif; font-style: italic; font-weight: 400;
+    font-size: 2.5rem !important; line-height: 1.3; color: #003f77; margin: 0 0 24px !important; }
+.emp-band--dark .emp-support { color: #fff; }
+.emp-lg { font-family: Roboto, sans-serif; font-weight: 700; font-size: 3.8rem; line-height: 1.15;
+    color: #003f77; margin: 40px 0 16px; }
+.emp-banner-title span, .emp-solution-head .num, .emp-runhead .b { font-size: inherit !important; }
+
+/* running head: a breadcrumb on the dark opener */
+.emp-runhead { font-size: 1.6rem !important; color: #a9acaf; letter-spacing: .04em; margin-bottom: 26px; }
+.emp-runhead .b { color: #16a7df; font-weight: 700; }
+.emp-partners { color: #16a7df !important; font-weight: 700; font-size: 2.2rem !important; margin-top: 8px; }
+
+/* --- hero: title left, claim disc right (data-mgmt-a) ------------------ */
+.emp-hero { display: grid; grid-template-columns: 1fr 300px; gap: 40px; align-items: center; }
+.emp-disc { width: 240px; height: 272px; background: url(../img/home_circle.png) no-repeat 0 0;
+    padding: 96px 30px 0 22px; text-align: center; justify-self: end; }
+.emp-disc p { color: #fff; font-weight: 700; font-size: 1.6rem !important; line-height: 1.3; margin: 0 !important; }
+
+/* --- brand-blue box, opposite corners (cloud-banner .box) --------------- */
+.emp-box { background: #16a7df; color: #fff; padding: 30px 36px;
+    border-top-right-radius: 50px; border-bottom-left-radius: 50px; }
+.emp-box h3, .emp-box .emp-lg { color: #fff; font-family: Roboto, sans-serif; font-weight: 700; font-size: 3rem; margin: 0 0 14px; }
+.emp-box p { color: #fff; margin-bottom: 10px; }
+.emp-box strong, .emp-box .accent { color: #fff; }
+.emp-callout { text-align: left; }
+
+/* --- navy slab, one 50px corner (data-mgmt-b .left) --------------------- */
+.emp-slab { background: #003f77; color: #fff; padding: 50px 60px 56px; border-bottom-right-radius: 50px; }
+.emp-slab .emp-title { margin-bottom: 26px; }
+.emp-chevrons { list-style: disc; padding-left: 24px; margin: 0; }
+.emp-chevrons li { font-size: 2rem; line-height: 1.5; color: #fff; margin-bottom: 10px; }
+.emp-chevrons li:before { content: none; }
+.emp-chevrons strong { color: #fff; }
+
+/* --- six inclusions: colour strip, two rows of three (cloud-content) ---- */
+.emp-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; overflow: hidden;
+    border-top-left-radius: 50px; border-bottom-right-radius: 50px; margin-top: 30px; }
+.emp-strip-item { color: #fff; text-align: center; padding: 34px 26px 30px; border: 0; }
+.emp-strip-item:nth-child(3n+1) { background: #003f77; }
+.emp-strip-item:nth-child(3n+2) { background: #0085c4; }
+.emp-strip-item:nth-child(3n+3) { background: #00abdf; }
+.emp-strip-item h3 { font-family: Roboto, sans-serif; font-weight: 700; font-size: 2.4rem; color: #fff; margin: 10px 0 8px; }
+.emp-strip-item p { color: #fff; font-size: 1.6rem !important; line-height: 1.45; margin: 0 !important; }
+.emp-ico { width: 44px; height: 44px; color: #fff; stroke-width: 2; }
+
+/* --- tab-headed cards (analytics .custom-card): why igeckoo, architecture */
+.emp-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; list-style: none; padding: 0; margin: 30px 0 0; }
+.emp-cards li { display: block; background: #00538b; border-bottom-left-radius: 30px; overflow: hidden; }
+.emp-cards .head { display: flex; align-items: center; gap: 12px; background: #00abdf; color: #fff;
+    border-top-right-radius: 30px; padding: 16px 22px; min-height: 76px; }
+.emp-cards .n { font-family: Montserrat, sans-serif; font-weight: 700; font-size: 3rem !important; color: #fff; line-height: 1; }
+.emp-cards .t { font-family: Roboto, sans-serif; font-weight: 700; font-size: 2.2rem !important; color: #fff; line-height: 1.2; }
+.emp-cards .d { display: block; color: #fff; font-size: 1.7rem !important; line-height: 1.5; padding: 20px 22px 24px; }
+.emp-cards .emp-ico { width: 30px; height: 30px; flex: 0 0 30px; }
+.emp-band--navy .emp-cards li { background: #003f77; }
+.emp-band--white .emp-cards .head { background: #16a7df; }
+
+.emp-cards--2 { grid-template-columns: repeat(2, 1fr); }
+.emp-title--gap { margin-top: 60px; }
+.emp-callout { margin-top: 50px; }
+
+/* --- architecture figure ----------------------------------------------- */
+.emp-figure { margin: 0 0 10px; text-align: center; }
+.emp-figure img { max-width: 100%; height: auto; border: 0; }
+
+/* --- navy tab with 75px top corners (data-invoices) --------------------- */
+.emp-tab { background: #003f77; color: #fff; text-align: center; padding: 26px 20px;
+    border-top-left-radius: 75px; border-top-right-radius: 75px; margin-top: 70px; }
+.emp-tab h2 { font-family: Roboto, sans-serif; font-weight: 700; font-size: 4rem; color: #fff; margin: 0; }
+
+/* --- solution sections -------------------------------------------------- */
+.emp-solution-sub { margin-bottom: 30px !important; }
+.emp-checks { list-style: none; padding: 0; margin: 0; }
+.emp-checks li { font-size: 2rem; line-height: 1.5; padding-left: 32px; margin-bottom: 8px; position: relative; }
+.emp-checks li:before { content: "\2714"; position: absolute; left: 0; top: 0; color: #16a7df; font-weight: 700; }
+.emp-box .emp-checks li, .emp-slate .emp-checks li, .emp-split .emp-checks li { color: #fff; }
+.emp-box .emp-checks li:before, .emp-slate .emp-checks li:before, .emp-split .emp-checks li:before { color: #fff; }
+.emp-two { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; margin-top: 10px; }
+
+/* slate box, one 50px corner (consulting go-live) */
+.emp-slate { background: #586267; color: #fff; padding: 36px 40px 40px; border-top-right-radius: 50px; margin-top: 40px; }
+.emp-slate .emp-lg { color: #16a7df; margin-top: 0; }
+.emp-slate p { color: #fff; }
+
+/* --- licence matrices as tab-headed cards ------------------------------ */
+.emp-tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 10px 0 30px; }
+.emp-tablewrap:focus { outline: 2px solid #16a7df; outline-offset: 2px; }
+.emp-table { width: 100%; min-width: 640px; border-collapse: separate; border-spacing: 0; background: #fff; font-size: 1.7rem; }
+.emp-table th, .emp-table td { border: 0; border-bottom: 1px solid #e3e9ef; padding: 14px 16px; text-align: center; vertical-align: middle; }
+.emp-table thead th { background: #003f77; color: #fff; font-family: Roboto, sans-serif; font-weight: 700; font-size: 1.8rem; padding: 18px 16px; border-bottom: 0; }
+.emp-table thead th:last-child { border-top-right-radius: 30px; }
+.emp-table th.rowhead, .emp-table td.rowhead { text-align: left; font-weight: 700; color: #003f77; background: #fff; }
+.emp-table thead th.rowhead { background: #003f77; color: #fff; }
+.emp-table tbody tr:nth-child(odd) th, .emp-table tbody tr:nth-child(odd) td { background: #f4f8fb; }
+.emp-table tbody tr:last-child th { border-bottom-left-radius: 30px; }
+.emp-yes { color: #16a7df; font-weight: 700; font-size: 2.2rem !important; }
+.emp-no { color: #a9acaf; font-size: 1.8rem !important; }
+
+/* --- two-tone split card (consulting .bottom): additional services ----- */
+.emp-split { display: grid; grid-template-columns: 5fr 7fr; overflow: hidden; border-top-right-radius: 50px; }
+.emp-split .left { background: #16a7df; color: #fff; padding: 44px 40px; }
+.emp-split .left .emp-lg { color: #fff; margin: 0 0 6px; }
+.emp-split .left h3 { color: #fff; font-family: Roboto, sans-serif; font-weight: 400; font-size: 2.5rem; font-style: italic; margin: 0; }
+.emp-split .right { background: #586267; color: #fff; padding: 44px 40px; }
+
+/* --- close: navy tab with white dots (data-invoices + licensing dots) --- */
+.emp-close { background: #003f77 url(../img/igeckoo-performance-and-licensing-grey-dots.png) no-repeat 100% 0;
+    color: #fff; text-align: center; padding: 60px 0 70px; margin-top: 70px;
+    border-top-left-radius: 75px; border-top-right-radius: 75px; }
+.emp-close .q { font-style: italic; font-size: 2.5rem !important; color: #fff; margin-bottom: 4px !important; }
+.emp-close .a { font-family: Montserrat, sans-serif; font-weight: 700; font-size: 4.8rem !important; line-height: 1.2; margin-bottom: 22px !important; }
+.emp-close .products { font-family: Roboto, sans-serif; font-weight: 700; font-size: 2.5rem !important; color: #16a7df; line-height: 1.35; margin-bottom: 8px !important; }
+.emp-close .tag { font-style: italic; font-size: 2rem !important; color: #fff; margin-bottom: 30px !important; }
+.emp-close .cta { margin: 0 !important; }
+
+/* --- responsive ---------------------------------------------------------
+   app.css drops html to 62.5% below 992px; rems shrink with it. */
+@media (max-width: 991.98px) {
+    .emp-band { padding: 50px 0; }
+    .emp-title, .emp-doc h1.emp-banner-title, .emp-doc h2.emp-solution-head, .emp-close .a { font-size: 3.8rem; }
+    .emp-hero { grid-template-columns: 1fr; }
+    .emp-disc { justify-self: center; }
+    .emp-two { grid-template-columns: 1fr; gap: 20px; }
+    .emp-cards { grid-template-columns: repeat(2, 1fr); }
+    .emp-strip { grid-template-columns: repeat(2, 1fr); }
+    .emp-strip-item:nth-child(n) { background: #003f77; }
+    .emp-strip-item:nth-child(even) { background: #0085c4; }
+    .emp-slab { padding: 36px 30px 40px; }
+    .emp-split { grid-template-columns: 1fr; }
+}
+@media (max-width: 767.98px) {
+    .emp-cards, .emp-strip { grid-template-columns: 1fr; }
+    .emp-strip-item:nth-child(odd) { background: #003f77; }
+    .emp-strip-item:nth-child(even) { background: #0085c4; }
+    .emp-tab { border-top-left-radius: 40px; border-top-right-radius: 40px; }
+    .emp-close { border-top-left-radius: 40px; border-top-right-radius: 40px; }
+    .emp-tab h2 { font-size: 2.8rem; }
+    .emp-lg { font-size: 3rem; }
+    /* sticky row heads must paint an opaque background or ticks show through */
+    .emp-table th.rowhead { position: sticky; left: 0; z-index: 1; }
+}
+
+
+/* --- dropdown alignment (fix for a defect in the recovered CSS) ------------
+   app.css positions each menu panel with a hand-tuned percentage of the NAV's
+   width, because .dropdown-menu is absolute while its li.nav-item is static:
+
+       #menu-data{left:35%}      #menu-cloud{left:44%}
+       #menu-analytics{left:54%} #menu-consulting{left:42%}
+       #menu-vacancy{left:70%}   #menu-contact{left:80%}
+
+   Those numbers only hold for one particular nav width and exactly six
+   circles, so the panels drifted from their icons as the viewport changed,
+   #menu-consulting was already out of sequence (42% where ~63% was needed),
+   and adding the seventh (MX) circle shifted every icon left while the panels
+   stayed put, adding a constant ~87px error.
+
+   Anchoring each panel to its own li makes the percentage meaningless and the
+   position self-correcting: the panel is centred under its icon no matter how
+   many circles exist or how wide the window is. white-space:nowrap restores
+   the natural panel width, which would otherwise shrink-wrap to the 55px li.
+   tools/test_site.py asserts the offset stays at 0. */
+#header .menu-computer .navbar-nav > li.nav-item {
+    position: relative;
+}
+#header .menu-computer .dropdown-menu#menu-data,
+#header .menu-computer .dropdown-menu#menu-cloud,
+#header .menu-computer .dropdown-menu#menu-analytics,
+#header .menu-computer .dropdown-menu#menu-consulting,
+#header .menu-computer .dropdown-menu#menu-vacancy,
+#header .menu-computer .dropdown-menu#menu-contact,
+#header .menu-computer .dropdown-menu#menu-empresas {
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+/* The MX panel is the only one with a real list under it — its siblings have
+   one sub-entry at most, so app.css sets the title and the entry side by side
+   with a 28px vertical rule between them (span.divisor). Six entries stacked
+   under that rule leave it a 28px stub floating beside the first one.
+
+   So for this panel the rule becomes the list's own left border: same 1px,
+   same #004078, same 20px offset, running the full height of the list instead
+   of a fixed 28px. Nothing about the other six changes.
+
+   float:left from app.css also makes the <ul> shrink-wrap out of the flow,
+   which would collapse the panel to zero height around it — hence the clear. */
+#header .menu-computer .dropdown-menu#menu-empresas ul li:after {
+    content: "";
+    display: block;
+    clear: both;
+}
+#header .menu-computer .dropdown-menu#menu-empresas ul li span.divisor {
+    display: none;
+}
+#header .menu-computer .dropdown-menu#menu-empresas ul li ul {
+    clear: both;
+    float: none;
+    display: block;
+    margin: 8px 0 0 20px;
+    padding-left: 14px;
+    border-left: 1px solid #004078;
+}
+#header .menu-computer .dropdown-menu#menu-empresas ul li ul li a.right {
+    display: block;
+    line-height: 2;
+    margin-top: 0;
+}
+
+
+/* --- contact section ------------------------------------------------------
+   The recovered layout was built around a form: a narrow address column and a
+   wide col-md-8 for the fields, divided by a vertical rule. The form is gone,
+   so the rule now frames nothing and the column it framed is mostly empty.
+   inject_ext.py re-lays the markup; these rules finish the job. */
+#contact .contact.form {
+    border-left: 0 !important;      /* the divider existed only for the form */
+    padding-left: 15px !important;
+}
+#contact .contact-head {
+    margin-bottom: 10px;
+}
+#contact .contact-cta {
+    padding-bottom: 10px;
+}
+#contact .contact-invite {
+    font-size: 1.7rem;
+    color: #576368;
+    margin-bottom: 14px;
+}
+#contact .contact-action {
+    margin: 0;
+}
+/* Three equal address columns instead of one narrow one, filling the width the
+   form used to take. app.css indents .contact by 50px, which is too much when
+   the block is repeated three times across. */
+#contact .contact-details .contact.data {
+    padding: 20px 15px;
+    margin-top: 20px;
+}
+
+@media (max-width: 767.98px) {
+    #contact .contact-cta {
+        margin-top: 24px;
+    }
+    .btn-contact {
+        font-size: 1.9rem !important;
+        padding: 10px 22px !important;
+    }
+}
+
+/* --- vacancy call to action ----------------------------------------------
+   Same vestige as the contact block: app.css framed the application form with
+
+       #vacancies .current-vacancies .form{border-top:2px solid #576368;
+                                           padding-top:35px; margin-top:75px}
+
+   a rule and a 75px gap that separated the job description from the fields.
+   The form is gone, so the rule now divides the description from a two-line
+   call to action and the gap just leaves a hole. The label and the address sit
+   together as one idea instead. */
+#vacancies .current-vacancies .form {
+    border-top: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 25px !important;
+}
+#vacancies .current-vacancies .form .contact-invite {
+    margin-bottom: 10px;
+}
+
+/* --- EMPRESAS in the splash icon list -------------------------------------
+   The splash has its own icon list, independent of the two navbars, and on a
+   phone it IS the navigation — the navbar collapses into a burger menu, so the
+   splash list is what a visitor actually scrolls through. Sizing and the hover
+   swap come from app.css (.icon is 300x108 over a 108x216 sprite); only the
+   image is declared here. */
+#splash .right .icon#splash-empresas {
+    background: url(../img/splash_empresas_sprite.png) 0 0 no-repeat;
+}
+
+/* --- floating WhatsApp button --------------------------------------------
+   Bottom-right on every screen. WhatsApp green is the one colour outside the
+   site palette: it is the channel's own identity; a blue WhatsApp reads as fake. */
+.wa-btn {
+    position: fixed; right: 22px; bottom: 22px; z-index: 1100;
+    display: flex; align-items: center; gap: 10px;
+    background: #25d366; color: #fff !important; text-decoration: none !important;
+    padding: 12px 20px 12px 14px; border-radius: 30px;
+    font-family: Roboto, sans-serif; font-weight: 700; font-size: 1.7rem !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+}
+.wa-btn:hover { background: #1ebe5b; }
+.wa-btn svg { width: 28px; height: 28px; flex: 0 0 28px; }
+@media (max-width: 767.98px) {
+    .wa-btn { right: 14px; bottom: 14px; padding: 12px; }
+    .wa-btn span { display: none; }
+}
